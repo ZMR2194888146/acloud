@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>登录调试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { padding: 10px 15px; margin: 5px; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <h1>HKCE Cloud 登录功能调试</h1>
+    
+    <div class="test-section">
+        <h3>测试注册功能</h3>
+        <input type="text" id="regUsername" placeholder="用户名" value="testuser">
+        <input type="password" id="regPassword" placeholder="密码" value="123456">
+        <button onclick="testRegister()">注册</button>
+        <div id="regResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>测试登录功能</h3>
+        <input type="text" id="loginUsername" placeholder="用户名" value="admin">
+        <input type="password" id="loginPassword" placeholder="密码" value="admin">
+        <button onclick="testLogin()">登录</button>
+        <div id="loginResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>测试默认管理员登录</h3>
+        <button onclick="testAdminLogin()">使用 admin/admin 登录</button>
+        <div id="adminResult" class="result"></div>
+    </div>
+
+    <script>
+        async function testRegister() {
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const resultDiv = document.getElementById('regResult');
+            
+            try {
+                resultDiv.innerHTML = '注册中...';
+                const result = await window.go.main.App.Register(username, password);
+                resultDiv.innerHTML = `注册结果: ${JSON.stringify(result, null, 2)}`;
+                console.log('注册结果:', result);
+            } catch (error) {
+                resultDiv.innerHTML = `注册错误: ${error.message}`;
+                console.error('注册错误:', error);
+            }
+        }
+        
+        async function testLogin() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const resultDiv = document.getElementById('loginResult');
+            
+            try {
+                resultDiv.innerHTML = '登录中...';
+                const result = await window.go.main.App.Login(username, password);
+                resultDiv.innerHTML = `登录结果: ${JSON.stringify(result, null, 2)}`;
+                console.log('登录结果:', result);
+            } catch (error) {
+                resultDiv.innerHTML = `登录错误: ${error.message}`;
+                console.error('登录错误:', error);
+            }
+        }
+        
+        async function testAdminLogin() {
+            const resultDiv = document.getElementById('adminResult');
+            
+            try {
+                resultDiv.innerHTML = '使用默认管理员账号登录中...';
+                const result = await window.go.main.App.Login('admin', 'admin');
+                resultDiv.innerHTML = `管理员登录结果: ${JSON.stringify(result, null, 2)}`;
+                console.log('管理员登录结果:', result);
+                
+                // 检查登录状态
+                const isLoggedIn = await window.go.main.App.IsLoggedIn();
+                const currentUser = await window.go.main.App.GetCurrentUser();
+                resultDiv.innerHTML += `<br>登录状态: ${isLoggedIn}<br>当前用户: ${currentUser}`;
+            } catch (error) {
+                resultDiv.innerHTML = `管理员登录错误: ${error.message}`;
+                console.error('管理员登录错误:', error);
+            }
+        }
+        
+        // 页面加载时检查当前状态
+        window.addEventListener('load', async () => {
+            try {
+                const isLoggedIn = await window.go.main.App.IsLoggedIn();
+                const currentUser = await window.go.main.App.GetCurrentUser();
+                console.log('当前登录状态:', isLoggedIn);
+                console.log('当前用户:', currentUser);
+                
+                document.body.insertAdjacentHTML('afterbegin', 
+                    `<div style="background: #e7f3ff; padding: 10px; margin-bottom: 20px;">
+                        <strong>当前状态:</strong> 登录状态: ${isLoggedIn}, 当前用户: ${currentUser}
+                    </div>`
+                );
+            } catch (error) {
+                console.error('获取状态错误:', error);
+            }
+        });
+    </script>
+</body>
+</html>
