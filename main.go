@@ -2,60 +2,94 @@ package main
 
 import (
 	"embed"
+	"fmt"
+	"log"
+	"os"
 
 	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
 
-//go:embed build/appicon.png
-var icon []byte
-
 func main() {
-	// Create an instance of the app structure
+	// 创建应用实例
 	app := NewApp()
 
-	// Create application with options
-	err := wails.Run(&options.App{
-		Title:         "HKCE Cloud Drive",
-		Width:         1400,
-		Height:        900,
-		MinWidth:      1200,
-		MinHeight:     800,
-		MaxWidth:      2560,
-		MaxHeight:     1440,
-		DisableResize: false,
-		Fullscreen:    false,
-		Frameless:     false,
-		StartHidden:   false,
-		HideWindowOnClose: false,
-		AssetServer: &assetserver.Options{
-			Assets: assets,
-		},
-		BackgroundColour: &options.RGBA{R: 102, G: 126, B: 234, A: 1},
-		OnStartup:        app.startup,
-		OnDomReady:       app.domReady,
-		OnBeforeClose:    app.beforeClose,
-		OnShutdown:       app.shutdown,
-		WindowStartState: options.Normal,
+	// 检查是否以命令行模式运行
+	if len(os.Args) > 1 {
+		// 根据命令类型运行不同的命令行工具
+		switch os.Args[1] {
+		case "sync":
+			app.RunSyncCommand()
+		}
+	}
+
+	// 创建应用配置
+	appConfig := &options.App{
+		Title:             "HKCE Cloud 同步客户端",
+		Width:             1024,
+		Height:            768,
+		MinWidth:          800,
+		MinHeight:         600,
+		MaxWidth:          1280,
+		MaxHeight:         800,
+		DisableResize:     false,
+		Fullscreen:        false,
+		Frameless:         false,
+		StartHidden:       false,
+		HideWindowOnClose: true,
+		BackgroundColour:  &options.RGBA{R: 255, G: 255, B: 255, A: 255},
+		AssetServer:       &assetserver.Options{Assets: assets},
+		Menu:              nil,
+		Logger:            nil,
+		LogLevel:          logger.DEBUG,
+		OnStartup:         app.startup,
+		OnDomReady:        app.domReady,
+		OnBeforeClose:     app.beforeClose,
+		OnShutdown:        app.shutdown,
+		WindowStartState:  options.Normal,
 		Bind: []interface{}{
 			app,
 		},
-		// 启用开发者工具（仅在开发模式下）
-		Debug: options.Debug{
-			OpenInspectorOnStartup: false,
+		// 系统托盘配置
+		Windows: &windows.Options{
+			WebviewIsTransparent:              false,
+			WindowIsTranslucent:               false,
+			DisableWindowIcon:                 false,
+			DisableFramelessWindowDecorations: false,
+			WebviewUserDataPath:               "",
+			Theme:                             windows.SystemDefault,
 		},
-		// 单实例应用
-		SingleInstanceLock: &options.SingleInstanceLock{
-			UniqueId:               "com.hkce.cloud.drive",
-			OnSecondInstanceLaunch: app.onSecondInstanceLaunch,
+		Mac: &mac.Options{
+			TitleBar: &mac.TitleBar{
+				TitlebarAppearsTransparent: false,
+				HideTitle:                  false,
+				HideTitleBar:               false,
+				FullSizeContent:            false,
+				UseToolbar:                 false,
+				HideToolbarSeparator:       true,
+			},
+			Appearance:           mac.DefaultAppearance,
+			WebviewIsTransparent: false,
+			WindowIsTranslucent:  false,
+			About: &mac.AboutInfo{
+				Title:   "HKCE Cloud 同步客户端",
+				Message: "© 2024 HKCE Cloud",
+				Icon:    nil,
+			},
 		},
-	})
-
-	if err != nil {
-		println("Error:", err.Error())
 	}
+
+	// 启动应用
+	if err := wails.Run(appConfig); err != nil {
+		log.Fatalf("启动应用失败: %v", err)
+	}
+
+	fmt.Println("应用已退出")
 }

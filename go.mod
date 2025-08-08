@@ -5,7 +5,6 @@ go 1.23.0
 toolchain go1.24.1
 
 require (
-	github.com/fsnotify/fsnotify v1.9.0
 	github.com/minio/minio-go/v7 v7.0.95
 	github.com/wailsapp/wails/v2 v2.10.2
 )
@@ -49,5 +48,3 @@ require (
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
 )
-
-// replace github.com/wailsapp/wails/v2 v2.10.2 => /Users/zhaomengru/go/pkg/mod

@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { ListFiles, CreateFolder, DeleteFile, RenameFile, GetStoragePath, UploadFile, UploadFileString, DownloadFile, IsLoggedIn, GetCurrentUser, Logout, OpenInExplorer, OpenFileInExplorer, GetSyncStatus, ToggleSyncStatus, GetSystemInfo, SetAutoStart, CheckForUpdatesManually } from '../wailsjs/go/main/App'
+import { ListFiles, CreateFolder, DeleteFile, RenameFile, GetStoragePath, UploadFile, UploadFileString, DownloadFile, IsLoggedIn, GetCurrentUser, Logout, OpenInExplorer, OpenFileInExplorer, GetSyncStatus, ToggleSyncStatus, GetSystemInfo, SetAutoStart, CheckForUpdatesManually, GetSyncRules, AddSyncRule, UpdateSyncRule, RemoveSyncRule, EnableSyncRule, DisableSyncRule } from '../wailsjs/go/main/App'
 import Login from './components/Login.vue'
 import FilePreview from './components/FilePreview.vue'
 import MinioConfig from './components/MinioConfig.vue'
 import MinioFiles from './components/MinioFiles.vue'
 import ISCSIInitiator from './components/ISCSIInitiator.vue'
 import SystemSettings from './components/SystemSettings.vue'
+import SyncRuleManager from './components/SyncRuleManager.vue'
 
 // 登录状态
 const isLoggedIn = ref(false)
@@ -472,24 +473,19 @@ onMounted(() => {
             文件管理
           </a-menu-item>
           
+          <a-menu-item key="sync">
+            <template #icon><icon-sync /></template>
+            同步中心
+          </a-menu-item>
+          
           <a-menu-item key="minio" v-if="minioEnabled">
             <template #icon><icon-cloud /></template>
             云端文件
           </a-menu-item>
           
-          <a-menu-item key="sync" v-if="minioEnabled">
-            <template #icon><icon-sync /></template>
-            同步中心
-          </a-menu-item>
-          
           <a-menu-item key="iscsi">
             <template #icon><icon-storage /></template>
             iSCSI存储
-          </a-menu-item>
-          
-          <a-menu-item key="settings">
-            <template #icon><icon-settings /></template>
-            系统设置
           </a-menu-item>
           
           <a-menu-item key="settings">
@@ -927,6 +923,9 @@ onMounted(() => {
                 </a-space>
               </a-space>
             </a-card>
+            
+            <!-- 同步规则管理组件 -->
+            <SyncRuleManager />
           </div>
 
           <!-- iSCSI 存储视图 -->
