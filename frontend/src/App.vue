@@ -3,9 +3,7 @@ import { ref, onMounted } from 'vue'
 import { ListFiles, CreateFolder, DeleteFile, RenameFile, GetStoragePath, UploadFile, UploadFileString, DownloadFile, IsLoggedIn, GetCurrentUser, Logout, OpenInExplorer, OpenFileInExplorer, GetSyncStatus, ToggleSyncStatus, GetSystemInfo, SetAutoStart, CheckForUpdatesManually, GetSyncRules, AddSyncRule, UpdateSyncRule, RemoveSyncRule, EnableSyncRule, DisableSyncRule } from '../wailsjs/go/main/App'
 import Login from './components/Login.vue'
 import FilePreview from './components/FilePreview.vue'
-import MinioConfig from './components/MinioConfig.vue'
 import MinioFiles from './components/MinioFiles.vue'
-import ISCSIInitiator from './components/ISCSIInitiator.vue'
 import SystemSettings from './components/SystemSettings.vue'
 import SyncRuleManager from './components/SyncRuleManager.vue'
 
@@ -17,6 +15,8 @@ const currentUser = ref('')
 const sidebarCollapsed = ref(false)
 const activeView = ref('files')
 const viewMode = ref('list')
+const windowWidth = ref(window.innerWidth)
+const windowHeight = ref(window.innerHeight)
 
 // 当前路径
 const currentPath = ref('')
@@ -40,8 +40,6 @@ const currentPreviewFile = ref(null)
 const minioEnabled = ref(false)
 const showMinioConfig = ref(false)
 
-// iSCSI 相关
-const showISCSIManager = ref(false)
 
 // 同步相关
 const syncRunning = ref(false)
@@ -83,7 +81,7 @@ const newSyncRule = ref({
 })
 
 // 菜单点击处理
-const handleMenuClick = (key) => {
+const handleMenuClick = ({ key }) => {
   activeView.value = key
   if (key === 'files') {
     loadFiles()
@@ -347,16 +345,6 @@ const handleLogout = async () => {
   }
 }
 
-// 处理 MinIO 配置更新
-const handleMinioConfigUpdated = (enabled) => {
-  minioEnabled.value = enabled
-  
-  // 如果禁用了 MinIO，切换回本地存储并加载本地文件
-  if (!enabled) {
-    loadFiles()
-    loadStoragePath()
-  }
-}
 
 // 在资源管理器中打开当前目录
 const openCurrentFolderInExplorer = async () => {
@@ -425,9 +413,28 @@ const formatSyncTime = (time) => {
   return new Date(time).toLocaleString()
 }
 
+// 窗口大小变化处理
+const handleResize = () => {
+  windowWidth.value = window.innerWidth
+  windowHeight.value = window.innerHeight
+  
+  // 小屏幕自动折叠侧边栏
+  if (windowWidth.value < 1024) {
+    sidebarCollapsed.value = true
+  } else if (windowWidth.value > 1200) {
+    sidebarCollapsed.value = false
+  }
+}
+
 // 组件挂载时检查登录状态
 onMounted(() => {
   checkLoginStatus()
+  
+  // 初始化窗口大小
+  handleResize()
+  
+  // 监听窗口大小变化
+  window.addEventListener('resize', handleResize)
   
   // 定期更新同步状态
   setInterval(() => {
@@ -447,7 +454,7 @@ onMounted(() => {
       <!-- 侧边栏 -->
       <a-layout-sider 
         class="modern-sidebar" 
-        :width="280" 
+        :width="200" 
         :collapsed="sidebarCollapsed"
         collapsible
         @collapse="sidebarCollapsed = $event"
@@ -456,7 +463,7 @@ onMounted(() => {
         <div class="sidebar-logo">
           <div class="logo-wrapper">
             <div class="logo-icon-wrapper">
-              <icon-cloud class="logo-icon" :size="28" />
+              <span class="logo-icon">☁️</span>
             </div>
             <span v-if="!sidebarCollapsed" class="logo-text">HKCE Drive</span>
           </div>
@@ -466,30 +473,25 @@ onMounted(() => {
         <a-menu 
           class="sidebar-menu"
           :selected-keys="[activeView]"
-          @menu-item-click="handleMenuClick"
+          @click="handleMenuClick"
         >
           <a-menu-item key="files">
-            <template #icon><icon-folder /></template>
+            <template #icon>⊞</template>
             文件管理
           </a-menu-item>
           
           <a-menu-item key="sync">
-            <template #icon><icon-sync /></template>
+            <template #icon>↻</template>
             同步中心
           </a-menu-item>
           
           <a-menu-item key="minio" v-if="minioEnabled">
-            <template #icon><icon-cloud /></template>
+            <template #icon>⟐</template>
             云端文件
           </a-menu-item>
           
-          <a-menu-item key="iscsi">
-            <template #icon><icon-storage /></template>
-            iSCSI存储
-          </a-menu-item>
-          
           <a-menu-item key="settings">
-            <template #icon><icon-settings /></template>
+            <template #icon>⚙</template>
             系统设置
           </a-menu-item>
         </a-menu>
@@ -499,12 +501,12 @@ onMounted(() => {
           <a-card class="user-card" :bordered="false">
             <div class="user-info">
               <a-avatar class="user-avatar" :size="40">
-                <icon-user />
+                👤
               </a-avatar>
               <div class="user-details">
                 <div class="user-name">{{ currentUser }}</div>
                 <div class="user-status">
-                  <a-tag :color="minioEnabled ? 'arcoblue' : 'green'" size="small">
+                  <a-tag :color="minioEnabled ? 'blue' : 'green'" size="small">
                     {{ minioEnabled ? '云端模式' : '本地模式' }}
                   </a-tag>
                 </div>
@@ -516,7 +518,6 @@ onMounted(() => {
               size="small"
               @click="handleLogout"
             >
-              <template #icon><icon-export /></template>
               退出
             </a-button>
           </a-card>
@@ -536,14 +537,14 @@ onMounted(() => {
                   @click="navigateTo(breadcrumb)"
                   :class="{ clickable: index < breadcrumbs.length - 1 }"
                 >
-                  <icon-home v-if="index === 0" />
+                  <span v-if="index === 0">🏠</span>
                   {{ breadcrumb.name }}
                 </a-breadcrumb-item>
               </a-breadcrumb>
             </div>
             
             <div class="header-right">
-              <a-space>
+              <div class="header-controls">
                 <!-- 搜索框 -->
                 <a-input-search
                   class="header-search"
@@ -553,30 +554,18 @@ onMounted(() => {
                 />
                 
                 <!-- 视图切换 -->
-                <a-radio-group v-model="viewMode" type="button" size="small">
-                  <a-radio value="list">
-                    <template #radio="{ checked }">
-                      <a-button :type="checked ? 'primary' : 'secondary'" size="small">
-                        <template #icon><icon-list /></template>
-                      </a-button>
-                    </template>
-                  </a-radio>
-                  <a-radio value="grid">
-                    <template #radio="{ checked }">
-                      <a-button :type="checked ? 'primary' : 'secondary'" size="small">
-                        <template #icon><icon-apps /></template>
-                      </a-button>
-                    </template>
-                  </a-radio>
+                <a-radio-group v-model:value="viewMode" button-style="solid" size="small" class="view-toggle">
+                  <a-radio-button value="list">≡</a-radio-button>
+                  <a-radio-button value="grid">⊞</a-radio-button>
                 </a-radio-group>
                 
                 <!-- 通知 -->
                 <a-badge :count="syncStatus.errors?.length || 0" dot>
                   <a-button type="text" class="notification-btn">
-                    <template #icon><icon-notification /></template>
+                    🔔
                   </a-button>
                 </a-badge>
-              </a-space>
+              </div>
             </div>
           </div>
         </a-layout-header>
@@ -587,18 +576,16 @@ onMounted(() => {
           <div v-if="activeView === 'files'" class="content-section">
             <div class="section-header">
               <div class="section-title">
-                <icon-folder class="section-icon" />
+                <span class="section-icon">📁</span>
                 <h2>本地文件管理</h2>
               </div>
               <div class="section-actions">
                 <a-space>
                   <a-button type="primary" @click="triggerFileUpload">
-                    <template #icon><icon-upload /></template>
-                    上传文件
+                    📤 上传文件
                   </a-button>
                   <a-button @click="openCurrentFolderInExplorer">
-                    <template #icon><icon-folder /></template>
-                    打开文件夹
+                    📁 打开文件夹
                   </a-button>
                 </a-space>
               </div>
@@ -610,14 +597,13 @@ onMounted(() => {
                 <a-col :span="16">
                   <a-input-group compact>
                     <a-input 
-                      v-model="newFolderName" 
+                      v-model:value="newFolderName" 
                       placeholder="新建文件夹名称" 
                       @keyup.enter="createFolder"
                       style="width: calc(100% - 100px)"
                     />
                     <a-button type="primary" @click="createFolder">
-                      <template #icon><icon-folder-add /></template>
-                      创建
+                      ⊞ 创建
                     </a-button>
                   </a-input-group>
                 </a-col>
@@ -625,12 +611,10 @@ onMounted(() => {
                   <div class="view-controls">
                     <a-space>
                       <a-button @click="loadFiles()">
-                        <template #icon><icon-refresh /></template>
-                        刷新
+                        🔄 刷新
                       </a-button>
                       <a-button @click="goBack" :disabled="currentPath === ''">
-                        <template #icon><icon-left /></template>
-                        返回
+                        ← 返回
                       </a-button>
                     </a-space>
                   </div>
@@ -643,102 +627,100 @@ onMounted(() => {
               <!-- 列表视图 -->
               <a-table 
                 v-if="viewMode === 'list'"
-                :data="files" 
+                :dataSource="files" 
                 :pagination="false"
                 :scroll="{ x: 800 }"
                 class="modern-table"
               >
-                <template #columns>
-                  <a-table-column title="名称" data-index="name" :width="300">
-                    <template #cell="{ record }">
-                      <div class="file-name-cell">
-                        <div class="file-icon-wrapper">
-                          <icon-folder v-if="record.isDir" class="file-icon folder-icon" />
-                          <icon-file v-else class="file-icon file-icon-style" />
-                        </div>
-                        
-                        <a-input 
-                          v-if="isRenaming && renameItem && renameItem.path === record.path"
-                          v-model="newName"
-                          @keyup.enter="finishRename"
-                          @keyup.esc="cancelRename"
-                          size="small"
-                          class="rename-input"
-                        />
-                        <span 
-                          v-else
-                          @click="record.isDir ? openFolder(record) : null"
-                          :class="{ 'folder-link': record.isDir, 'file-name': true }"
-                        >
-                          {{ record.name }}
-                        </span>
+                <a-table-column title="名称" data-index="name" :width="300">
+                  <template #default="{ record }">
+                    <div class="file-name-cell">
+                      <div class="file-icon-wrapper">
+                        <span v-if="record.isDir" class="file-icon folder-icon">📁</span>
+                        <span v-else class="file-icon file-icon-style">📄</span>
                       </div>
-                    </template>
-                  </a-table-column>
-                  
-                  <a-table-column title="大小" data-index="size" :width="120">
-                    <template #cell="{ record }">
-                      <span class="file-size">
-                        {{ record.isDir ? '-' : formatSize(record.size) }}
+                      
+                      <a-input 
+                        v-if="isRenaming && renameItem && renameItem.path === record.path"
+                        v-model:value="newName"
+                        @keyup.enter="finishRename"
+                        @keyup.esc="cancelRename"
+                        size="small"
+                        class="rename-input"
+                      />
+                      <span 
+                        v-else
+                        @click="record.isDir ? openFolder(record) : null"
+                        :class="{ 'folder-link': record.isDir, 'file-name': true }"
+                      >
+                        {{ record.name }}
                       </span>
-                    </template>
-                  </a-table-column>
-                  
-                  <a-table-column title="修改时间" data-index="updatedAt" :width="180">
-                    <template #cell="{ record }">
-                      <span class="file-date">
-                        {{ formatDate(record.updatedAt) }}
-                      </span>
-                    </template>
-                  </a-table-column>
-                  
-                  <a-table-column title="操作" :width="280">
-                    <template #cell="{ record }">
-                      <a-space class="file-actions">
-                        <a-button size="small" type="text" @click="startRename(record)">
-                          <template #icon><icon-edit /></template>
-                        </a-button>
-                        
-                        <a-popconfirm
-                          content="确定要删除这个文件吗？"
-                          @ok="deleteItem(record)"
-                        >
-                          <a-button size="small" type="text" status="danger">
-                            <template #icon><icon-delete /></template>
-                          </a-button>
-                        </a-popconfirm>
-                        
-                        <a-button 
-                          v-if="!record.isDir" 
-                          size="small" 
-                          type="text"
-                          @click="downloadFile(record)"
-                        >
-                          <template #icon><icon-download /></template>
-                        </a-button>
-                        
-                        <a-button 
-                          v-if="!record.isDir" 
-                          size="small" 
-                          type="text"
-                          @click="previewFile(record)"
-                        >
-                          <template #icon><icon-eye /></template>
-                        </a-button>
-                        
-                        <a-button 
-                          size="small"
-                          type="text"
-                          @click="openFileInExplorer(record)"
-                        >
-                          <template #icon><icon-folder /></template>
-                        </a-button>
-                      </a-space>
-                    </template>
-                  </a-table-column>
-                </template>
+                    </div>
+                  </template>
+                </a-table-column>
                 
-                <template #empty>
+                <a-table-column title="大小" data-index="size" :width="120">
+                  <template #default="{ record }">
+                    <span class="file-size">
+                      {{ record.isDir ? '-' : formatSize(record.size) }}
+                    </span>
+                  </template>
+                </a-table-column>
+                
+                <a-table-column title="修改时间" data-index="updatedAt" :width="180">
+                  <template #default="{ record }">
+                    <span class="file-date">
+                      {{ formatDate(record.updatedAt) }}
+                    </span>
+                  </template>
+                </a-table-column>
+                
+                <a-table-column title="操作" :width="280">
+                  <template #default="{ record }">
+                    <a-space class="file-actions">
+                      <a-button size="small" type="text" @click="startRename(record)">
+                        ✎
+                      </a-button>
+                      
+                      <a-popconfirm
+                        title="确定要删除这个文件吗？"
+                        @confirm="deleteItem(record)"
+                      >
+                        <a-button size="small" type="text" danger>
+                          ✕
+                        </a-button>
+                      </a-popconfirm>
+                      
+                      <a-button 
+                        v-if="!record.isDir" 
+                        size="small" 
+                        type="text"
+                        @click="downloadFile(record)"
+                      >
+                        ↓
+                      </a-button>
+                      
+                      <a-button 
+                        v-if="!record.isDir" 
+                        size="small" 
+                        type="text"
+                        @click="previewFile(record)"
+                      >
+                        ◉
+                      </a-button>
+                      
+                      <a-button 
+                        size="small"
+                        type="text"
+                        @click="openFileInExplorer(record)"
+                      >
+                        ⊞
+                      </a-button>
+                    </a-space>
+                  </template>
+                </a-table-column>
+                
+                <template #emptyText>
                   <a-empty description="此文件夹为空">
                     <a-button type="primary" @click="triggerFileUpload">
                       上传第一个文件
@@ -770,21 +752,20 @@ onMounted(() => {
                     <div class="file-card-actions">
                       <a-dropdown>
                         <a-button type="text" size="small">
-                          <template #icon><icon-more /></template>
+                          ⋯
                         </a-button>
-                        <template #content>
-                          <a-doption @click.stop="startRename(file)">
-                            <template #icon><icon-edit /></template>
-                            重命名
-                          </a-doption>
-                          <a-doption @click.stop="deleteItem(file)">
-                            <template #icon><icon-delete /></template>
-                            删除
-                          </a-doption>
-                          <a-doption v-if="!file.isDir" @click.stop="downloadFile(file)">
-                            <template #icon><icon-download /></template>
-                            下载
-                          </a-doption>
+                        <template #overlay>
+                          <a-menu>
+                            <a-menu-item @click.stop="startRename(file)">
+                              ✎ 重命名
+                            </a-menu-item>
+                            <a-menu-item @click.stop="deleteItem(file)">
+                              ✕ 删除
+                            </a-menu-item>
+                            <a-menu-item v-if="!file.isDir" @click.stop="downloadFile(file)">
+                              ↓ 下载
+                            </a-menu-item>
+                          </a-menu>
                         </template>
                       </a-dropdown>
                     </div>
@@ -803,7 +784,7 @@ onMounted(() => {
           <div v-if="activeView === 'sync'" class="content-section">
             <div class="section-header">
               <div class="section-title">
-                <icon-sync class="section-icon" />
+                <span class="section-icon">🔄</span>
                 <h2>同步中心</h2>
               </div>
             </div>
@@ -815,11 +796,11 @@ onMounted(() => {
                   <a-statistic
                     title="同步状态"
                     :value="syncStatus.running ? '运行中' : '已停止'"
-                    :value-style="{ color: syncStatus.running ? '#00b42a' : '#f53f3f' }"
+                    :value-style="{ color: syncStatus.running ? '#52c41a' : '#ff4d4f' }"
                   >
                     <template #prefix>
-                      <icon-sync v-if="syncStatus.running" spin />
-                      <icon-pause v-else />
+                      <span v-if="syncStatus.running">🔄</span>
+                      <span v-else>⏸️</span>
                     </template>
                   </a-statistic>
                 </a-card>
@@ -831,7 +812,7 @@ onMounted(() => {
                     title="最后同步"
                     :value="formatSyncTime(syncStatus.lastSync)"
                   >
-                    <template #prefix><icon-clock-circle /></template>
+                    <template #prefix>🕐</template>
                   </a-statistic>
                 </a-card>
               </a-col>
@@ -843,7 +824,7 @@ onMounted(() => {
                     :value="syncStatus.filesUploaded"
                     suffix="个文件"
                   >
-                    <template #prefix><icon-upload /></template>
+                    <template #prefix>📤</template>
                   </a-statistic>
                 </a-card>
               </a-col>
@@ -855,7 +836,7 @@ onMounted(() => {
                     :value="syncStatus.filesDownloaded"
                     suffix="个文件"
                   >
-                    <template #prefix><icon-download /></template>
+                    <template #prefix>↙</template>
                   </a-statistic>
                 </a-card>
               </a-col>
@@ -865,35 +846,38 @@ onMounted(() => {
             <a-card class="sync-control-card" :bordered="false">
               <template #title>
                 <div class="card-title">
-                  <icon-settings />
-                  同步控制
+                  ⚙️ 同步控制
                 </div>
               </template>
               
-              <a-space direction="vertical" size="large" fill>
+              <a-space direction="vertical" size="large" style="width: 100%">
                 <a-row :gutter="16">
                   <a-col :span="12">
-                    <a-form-item label="同步间隔">
-                      <a-input-number 
-                        v-model="syncInterval" 
-                        :min="1" 
-                        :max="1440"
-                        suffix="分钟"
-                        style="width: 200px"
-                      />
-                      <a-button type="primary" @click="setSyncInterval" style="margin-left: 8px">
-                        设置
-                      </a-button>
-                    </a-form-item>
+                    <div>
+                      <label>同步间隔</label>
+                      <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <a-input-number 
+                          v-model:value="syncInterval" 
+                          :min="1" 
+                          :max="1440"
+                          addon-after="分钟"
+                          style="width: 200px"
+                        />
+                        <a-button type="primary" @click="setSyncInterval">
+                          设置
+                        </a-button>
+                      </div>
+                    </div>
                   </a-col>
                   <a-col :span="12">
-                    <a-form-item label="同步模式">
-                      <a-radio-group v-model="syncMode" type="button">
-                        <a-radio value="full">完全同步</a-radio>
-                        <a-radio value="selective">选择性同步</a-radio>
-                        <a-radio value="backup">备份模式</a-radio>
+                    <div>
+                      <label>同步模式</label>
+                      <a-radio-group v-model:value="syncMode" button-style="solid" style="margin-top: 8px;">
+                        <a-radio-button value="full">完全同步</a-radio-button>
+                        <a-radio-button value="selective">选择性同步</a-radio-button>
+                        <a-radio-button value="backup">备份模式</a-radio-button>
                       </a-radio-group>
-                    </a-form-item>
+                    </div>
                   </a-col>
                 </a-row>
                 
@@ -904,21 +888,18 @@ onMounted(() => {
                     size="large"
                     @click="startSync"
                   >
-                    <template #icon><icon-play-arrow /></template>
-                    启动同步
+                    ▶️ 启动同步
                   </a-button>
                   <a-button 
                     v-else 
-                    status="danger" 
+                    danger 
                     size="large"
                     @click="stopSync"
                   >
-                    <template #icon><icon-pause /></template>
-                    停止同步
+                    ⏸ 停止同步
                   </a-button>
                   <a-button @click="updateSyncStatus">
-                    <template #icon><icon-refresh /></template>
-                    刷新状态
+                    🔄 刷新状态
                   </a-button>
                 </a-space>
               </a-space>
@@ -928,16 +909,6 @@ onMounted(() => {
             <SyncRuleManager />
           </div>
 
-          <!-- iSCSI 存储视图 -->
-          <div v-if="activeView === 'iscsi'" class="content-section">
-            <div class="section-header">
-              <div class="section-title">
-                <icon-storage class="section-icon" />
-                <h2>iSCSI 网络存储</h2>
-              </div>
-            </div>
-            <ISCSIInitiator />
-          </div>
 
           <!-- 系统设置视图 -->
           <div v-if="activeView === 'settings'" class="content-section">
@@ -969,7 +940,7 @@ onMounted(() => {
 /* 现代化容器样式 */
 .modern-drive-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f5f5f5;
 }
 
 .modern-layout {
@@ -982,6 +953,11 @@ onMounted(() => {
   backdrop-filter: blur(20px);
   border-right: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+  height: 100vh;
+  overflow: hidden;
+  position: fixed;
+  left: 0;
+  top: 0;
 }
 
 .sidebar-logo {
@@ -1024,19 +1000,19 @@ onMounted(() => {
   padding: 16px 12px;
 }
 
-.sidebar-menu .arco-menu-item {
+.sidebar-menu .ant-menu-item {
   margin-bottom: 8px;
   border-radius: 12px;
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
-.sidebar-menu .arco-menu-item:hover {
+.sidebar-menu .ant-menu-item:hover {
   background: rgba(102, 126, 234, 0.1);
   transform: translateX(4px);
 }
 
-.sidebar-menu .arco-menu-item-selected {
+.sidebar-menu .ant-menu-item-selected {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
@@ -1047,13 +1023,15 @@ onMounted(() => {
   bottom: 20px;
   left: 20px;
   right: 20px;
+  z-index: 10;
 }
 
 .user-card {
-  background: rgba(255, 255, 255, 0.8);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
 }
 
 .user-info {
@@ -1064,7 +1042,14 @@ onMounted(() => {
 }
 
 .user-avatar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  width: 40px !important;
+  height: 40px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .user-details {
@@ -1073,7 +1058,7 @@ onMounted(() => {
 
 .user-name {
   font-weight: 600;
-  color: #1d2129;
+  color: white;
   margin-bottom: 4px;
 }
 
@@ -1084,11 +1069,25 @@ onMounted(() => {
 .logout-btn {
   width: 100%;
   border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  color: white;
 }
 
 /* 主布局样式 */
 .main-layout {
   background: transparent;
+  margin-left: 200px;
+  transition: margin-left 0.2s;
+}
+
+.modern-layout .ant-layout-sider-collapsed + .main-layout {
+  margin-left: 48px;
 }
 
 /* 顶部状态栏样式 */
@@ -1098,6 +1097,56 @@ onMounted(() => {
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
   height: 64px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 200px;
+  z-index: 5;
+  transition: left 0.2s;
+}
+
+.modern-layout .ant-layout-sider-collapsed ~ .main-layout .modern-header {
+  left: 48px;
+}
+
+/* 优化内容区域布局 */
+.modern-content {
+  padding: 20px;
+  background: transparent;
+  overflow-y: auto;
+  height: calc(100vh - 64px);
+  padding-top: 20px;
+  margin-top: 64px;
+}
+
+/* 优化卡片间距 */
+.quick-actions-card,
+.files-card,
+.sync-control-card,
+.settings-card,
+.stat-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 16px;
+}
+
+/* 优化侧边栏菜单项间距 */
+.sidebar-menu {
+  border: none;
+  background: transparent;
+  padding: 12px 8px;
+}
+
+.sidebar-menu .ant-menu-item {
+  margin-bottom: 6px;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  height: 42px;
+  line-height: 42px;
 }
 
 .header-content {
@@ -1125,21 +1174,58 @@ onMounted(() => {
   color: #165dff;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 32px;
+}
+
 .header-search {
   border-radius: 20px;
+  height: 32px !important;
+}
+
+.header-search .ant-input {
+  height: 32px !important;
+  line-height: 32px;
+}
+
+.header-search .ant-input-search-button {
+  height: 32px !important;
+}
+
+.view-toggle {
+  height: 32px !important;
+  display: flex;
+  align-items: center;
+}
+
+.view-toggle .ant-radio-button-wrapper {
+  height: 32px !important;
+  line-height: 30px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .notification-btn {
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 主内容区域样式 */
 .modern-content {
-  padding: 24px;
+  padding: 20px;
   background: transparent;
   overflow-y: auto;
+  height: calc(100vh - 64px);
+  padding-top: 20px;
+  margin-top: 64px;
 }
 
 .content-section {
@@ -1210,13 +1296,13 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.modern-table .arco-table-th {
+.modern-table .ant-table-thead > tr > th {
   background: #f7f8fa;
   font-weight: 600;
   color: #1d2129;
 }
 
-.modern-table .arco-table-td {
+.modern-table .ant-table-tbody > tr > td {
   border-bottom: 1px solid #f2f3f5;
 }
 
@@ -1274,7 +1360,7 @@ onMounted(() => {
   transition: opacity 0.2s;
 }
 
-.modern-table .arco-table-tr:hover .file-actions {
+.modern-table .ant-table-tbody > tr:hover .file-actions {
   opacity: 1;
 }
 
@@ -1368,6 +1454,16 @@ onMounted(() => {
 }
 
 /* 响应式设计 */
+@media (max-width: 1400px) {
+  .content-section {
+    max-width: 100%;
+  }
+  
+  .header-search {
+    width: 200px !important;
+  }
+}
+
 @media (max-width: 1200px) {
   .modern-content {
     padding: 16px;
@@ -1377,27 +1473,112 @@ onMounted(() => {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 12px;
   }
-}
-
-@media (max-width: 768px) {
+  
   .section-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    gap: 12px;
   }
   
+  .section-actions {
+    width: 100%;
+  }
+  
+  .quick-actions-card .ant-row {
+    flex-direction: column;
+  }
+  
+  .quick-actions-card .ant-col {
+    width: 100% !important;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .modern-sidebar {
+    width: 200px;
+  }
+  
+  .main-layout {
+    margin-left: 80px;
+  }
+  
+  .modern-header {
+    left: 80px;
+  }
+  
+  .sync-stats .ant-col {
+    span: 12 !important;
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 768px) {
   .header-content {
     flex-direction: column;
     gap: 12px;
     padding: 12px 16px;
+    height: auto;
+    min-height: 64px;
   }
   
-  .sync-stats .arco-col {
-    margin-bottom: 16px;
+  .header-search {
+    width: 100% !important;
+    max-width: 300px;
+  }
+  
+  .modern-header {
+    height: auto;
+    min-height: 64px;
+  }
+  
+  .modern-content {
+    margin-top: 80px;
+    padding: 12px;
+  }
+  
+  .sync-stats .ant-col {
+    span: 24 !important;
+    margin-bottom: 12px;
   }
   
   .file-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+  }
+  
+  .modern-table {
+    font-size: 14px;
+  }
+  
+  .file-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .modern-content {
+    padding: 8px;
+  }
+  
+  .section-title h2 {
+    font-size: 20px;
+  }
+  
+  .file-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 6px;
+  }
+  
+  .file-card {
+    padding: 12px;
+  }
+  
+  .quick-actions-card,
+  .files-card,
+  .sync-control-card {
+    border-radius: 8px;
+    margin-bottom: 12px;
   }
 }
 

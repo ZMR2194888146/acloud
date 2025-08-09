@@ -110,26 +110,32 @@
                 v-model:value="settings.syncMode" 
                 @change="handleSyncModeChange"
               >
-                <a-space direction="vertical">
-                  <a-radio value="full">
-                    <div>
-                      <div class="setting-title">完全同步</div>
-                      <div class="setting-desc">同步所有文件和文件夹</div>
-                    </div>
-                  </a-radio>
-                  <a-radio value="selective">
-                    <div>
-                      <div class="setting-title">选择性同步</div>
-                      <div class="setting-desc">只同步选定的文件和文件夹</div>
-                    </div>
-                  </a-radio>
-                  <a-radio value="backup">
-                    <div>
-                      <div class="setting-title">备份模式</div>
-                      <div class="setting-desc">只上传，不下载</div>
-                    </div>
-                  </a-radio>
-                </a-space>
+                <a-row :gutter="16">
+                  <a-col :span="8">
+                    <a-radio value="full">
+                      <div>
+                        <div class="setting-title">完全同步</div>
+                        <div class="setting-desc">同步所有文件和文件夹</div>
+                      </div>
+                    </a-radio>
+                  </a-col>
+                  <a-col :span="8">
+                    <a-radio value="selective">
+                      <div>
+                        <div class="setting-title">选择性同步</div>
+                        <div class="setting-desc">只同步选定的文件和文件夹</div>
+                      </div>
+                    </a-radio>
+                  </a-col>
+                  <a-col :span="8">
+                    <a-radio value="backup">
+                      <div>
+                        <div class="setting-title">备份模式</div>
+                        <div class="setting-desc">只上传，不下载</div>
+                      </div>
+                    </a-radio>
+                  </a-col>
+                </a-row>
               </a-radio-group>
             </a-card>
           </a-space>
@@ -180,18 +186,131 @@
                     @click="checkForUpdates"
                     block
                   >
-                    <template #icon>
-                      <ReloadOutlined />
-                    </template>
-                    检查更新
+                    ↻ 检查更新
                   </a-button>
                 </a-col>
                 <a-col :span="12">
                   <a-button @click="showUpdateHistory" block>
-                    <template #icon>
-                      <HistoryOutlined />
-                    </template>
-                    更新历史
+                    📜 更新历史
+                  </a-button>
+                </a-col>
+              </a-row>
+            </a-card>
+          </a-space>
+        </a-tab-pane>
+
+        <!-- 存储设置 -->
+        <a-tab-pane key="storage" tab="存储设置">
+          <a-space direction="vertical" size="large" style="width: 100%">
+            <!-- MinIO 配置 -->
+            <a-card size="small" title="MinIO 对象存储">
+              <a-row :gutter="16" align="middle" style="margin-bottom: 16px">
+                <a-col :span="18">
+                  <div>
+                    <div class="setting-title">启用 MinIO 存储</div>
+                    <div class="setting-desc">使用 MinIO 对象存储作为云端存储后端</div>
+                  </div>
+                </a-col>
+                <a-col :span="6">
+                  <a-switch 
+                    v-model:checked="minioConfig.enabled" 
+                    @change="saveMinioConfig"
+                  />
+                </a-col>
+              </a-row>
+
+              <div v-if="minioConfig.enabled">
+                <a-divider />
+                
+                <a-row :gutter="16" style="margin-bottom: 16px">
+                  <a-col :span="12">
+                    <div class="setting-title">服务器地址</div>
+                    <a-input 
+                      v-model:value="minioConfig.endpoint" 
+                      placeholder="例如: play.min.io"
+                      style="margin-top: 8px"
+                    />
+                  </a-col>
+                  <a-col :span="12">
+                    <div class="setting-title">存储桶名称</div>
+                    <a-input 
+                      v-model:value="minioConfig.bucketName" 
+                      placeholder="例如: hkce-cloud"
+                      style="margin-top: 8px"
+                    />
+                  </a-col>
+                </a-row>
+
+                <a-row :gutter="16" style="margin-bottom: 16px">
+                  <a-col :span="12">
+                    <div class="setting-title">访问密钥 ID</div>
+                    <a-input 
+                      v-model:value="minioConfig.accessKeyId" 
+                      placeholder="访问密钥 ID"
+                      style="margin-top: 8px"
+                    />
+                  </a-col>
+                  <a-col :span="12">
+                    <div class="setting-title">秘密访问密钥</div>
+                    <a-input-password 
+                      v-model:value="minioConfig.secretAccessKey" 
+                      placeholder="秘密访问密钥"
+                      style="margin-top: 8px"
+                    />
+                  </a-col>
+                </a-row>
+
+                <a-row :gutter="16" align="middle" style="margin-bottom: 16px">
+                  <a-col :span="18">
+                    <div>
+                      <div class="setting-title">使用 SSL 连接</div>
+                      <div class="setting-desc">启用 HTTPS 安全连接</div>
+                    </div>
+                  </a-col>
+                  <a-col :span="6">
+                    <a-switch v-model:checked="minioConfig.useSSL" />
+                  </a-col>
+                </a-row>
+
+                <a-divider />
+
+                <a-row :gutter="16">
+                  <a-col :span="12">
+                    <a-button 
+                      type="default" 
+                      :loading="testLoading"
+                      @click="testMinioConnection"
+                      block
+                    >
+                      🔗 测试连接
+                    </a-button>
+                  </a-col>
+                  <a-col :span="12">
+                    <a-button 
+                      type="primary" 
+                      :loading="minioLoading"
+                      @click="saveMinioConfig"
+                      block
+                    >
+                      ✓ 保存配置
+                    </a-button>
+                  </a-col>
+                </a-row>
+              </div>
+            </a-card>
+
+            <!-- 本地存储设置 -->
+            <a-card size="small" title="本地存储">
+              <a-row :gutter="16" align="middle">
+                <a-col :span="18">
+                  <div>
+                    <div class="setting-title">存储路径</div>
+                    <div class="setting-desc">{{ systemInfo.storage_path || '未设置' }}</div>
+                  </div>
+                </a-col>
+                <a-col :span="6">
+                  <a-button size="small">
+                    📁 更改路径
                   </a-button>
                 </a-col>
               </a-row>
@@ -245,22 +364,13 @@
             <a-card size="small" title="数据管理">
               <a-space>
                 <a-button @click="exportSettings">
-                  <template #icon>
-                    <ExportOutlined />
-                  </template>
-                  导出设置
+                  📤 导出设置
                 </a-button>
                 <a-button @click="importSettings">
-                  <template #icon>
-                    <ImportOutlined />
-                  </template>
-                  导入设置
+                  📥 导入设置
                 </a-button>
                 <a-button danger @click="resetSettings">
-                  <template #icon>
-                    <RestOutlined />
-                  </template>
-                  重置设置
+                  🔄 重置设置
                 </a-button>
               </a-space>
             </a-card>
@@ -283,7 +393,7 @@
           :color="update.current ? 'green' : 'blue'"
         >
           <template #dot>
-            <CheckCircleOutlined v-if="update.current" style="color: green" />
+            <span v-if="update.current" style="color: green">✅</span>
           </template>
           <div>
             <div style="font-weight: bold">{{ update.version }}</div>
@@ -298,15 +408,9 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { 
-  ReloadOutlined, 
-  HistoryOutlined, 
-  ExportOutlined, 
-  ImportOutlined, 
-  RestOutlined,
-  CheckCircleOutlined 
-} from '@ant-design/icons-vue'
-import { GetSystemInfo, SetAutoStart, CheckForUpdatesManually, ToggleSyncStatus, GetSyncStatus } from '../../wailsjs/go/main/App'
+import { GetSystemInfo, SetAutoStart, CheckForUpdatesManually, ToggleSyncStatus, GetSyncStatus, GetMinioConfig, UpdateMinioConfig, TestMinioConnection } from '../../wailsjs/go/main/App'
+
+const emit = defineEmits(['config-updated'])
 
 // 使用简化的消息提示
 const message = {
@@ -318,6 +422,8 @@ const message = {
 const activeTab = ref('basic')
 const updateChecking = ref(false)
 const updateHistoryVisible = ref(false)
+const testLoading = ref(false)
+const minioLoading = ref(false)
 
 // 设置数据
 const settings = reactive({
@@ -346,6 +452,16 @@ const systemInfo = reactive({
   arch: '',
   storage_path: '',
   auto_start: false
+})
+
+// MinIO 配置
+const minioConfig = reactive({
+  enabled: false,
+  endpoint: '',
+  accessKeyId: '',
+  secretAccessKey: '',
+  bucketName: '',
+  useSSL: true
 })
 
 // 更新历史
@@ -377,6 +493,17 @@ const loadSyncStatus = async () => {
     Object.assign(syncStatus, status)
   } catch (error) {
     console.error('加载同步状态失败:', error)
+  }
+}
+
+// 加载 MinIO 配置
+const loadMinioConfig = async () => {
+  try {
+    const config = await GetMinioConfig()
+    Object.assign(minioConfig, config)
+  } catch (error) {
+    console.error('加载MinIO配置失败:', error)
+    message.error('加载MinIO配置失败')
   }
 }
 
@@ -465,6 +592,51 @@ const showUpdateHistory = () => {
   updateHistoryVisible.value = true
 }
 
+// 保存 MinIO 配置
+const saveMinioConfig = async () => {
+  minioLoading.value = true
+  
+  try {
+    await UpdateMinioConfig(
+      minioConfig.endpoint,
+      minioConfig.accessKeyId,
+      minioConfig.secretAccessKey,
+      minioConfig.bucketName,
+      minioConfig.useSSL,
+      minioConfig.enabled
+    )
+    
+    message.success('MinIO配置已保存')
+    emit('config-updated', minioConfig.enabled)
+  } catch (error) {
+    console.error('保存MinIO配置失败:', error)
+    message.error('保存MinIO配置失败')
+  } finally {
+    minioLoading.value = false
+  }
+}
+
+// 测试 MinIO 连接
+const testMinioConnection = async () => {
+  testLoading.value = true
+  
+  try {
+    await TestMinioConnection(
+      minioConfig.endpoint,
+      minioConfig.accessKeyId,
+      minioConfig.secretAccessKey,
+      minioConfig.useSSL
+    )
+    
+    message.success('MinIO连接测试成功')
+  } catch (error) {
+    console.error('MinIO连接测试失败:', error)
+    message.error('MinIO连接测试失败')
+  } finally {
+    testLoading.value = false
+  }
+}
+
 // 导出设置
 const exportSettings = () => {
   const settingsData = JSON.stringify(settings, null, 2)
@@ -520,6 +692,7 @@ const resetSettings = () => {
 onMounted(() => {
   loadSystemInfo()
   loadSyncStatus()
+  loadMinioConfig()
 })
 </script>
 

@@ -14,7 +14,7 @@
       <div class="login-header">
         <div class="logo-container">
           <div class="logo-icon">
-            <icon-cloud class="logo" />
+            <span class="logo">☁️</span>
           </div>
           <h1 class="app-title">HKCE Cloud</h1>
           <p class="app-subtitle">现代化桌面网盘应用</p>
@@ -24,9 +24,9 @@
       <a-card class="login-card" :bordered="false">
         <!-- 状态提示条 -->
         <div v-if="statusMessage" :class="['status-bar', statusType]">
-          <icon-check-circle v-if="statusType === 'success'" />
-          <icon-exclamation-circle v-else-if="statusType === 'error'" />
-          <icon-info-circle v-else />
+          <span v-if="statusType === 'success'">✅</span>
+          <span v-else-if="statusType === 'error'">❌</span>
+          <span v-else>ℹ️</span>
           {{ statusMessage }}
         </div>
 
@@ -34,7 +34,7 @@
           <!-- 登录表单 -->
           <div class="form-section" :class="{ 'form-hidden': showRegister }">
             <h2 class="form-title">
-              <icon-user class="title-icon" />
+              <span class="title-icon">👤</span>
               用户登录
             </h2>
             
@@ -42,28 +42,28 @@
             <div class="simple-form">
               <div class="form-item">
                 <a-input
-                  v-model="form.username"
+                  v-model:value="form.username"
                   placeholder="请输入用户名"
                   size="large"
                   class="animated-input"
                   @keyup.enter="handleLogin"
                 >
                   <template #prefix>
-                    <icon-user class="input-icon" />
+                    <span class="input-icon">👤</span>
                   </template>
                 </a-input>
               </div>
 
               <div class="form-item">
                 <a-input-password
-                  v-model="form.password"
+                  v-model:value="form.password"
                   placeholder="请输入密码"
                   size="large"
                   class="animated-input"
                   @keyup.enter="handleLogin"
                 >
                   <template #prefix>
-                    <icon-lock class="input-icon" />
+                    <span class="input-icon">🔒</span>
                   </template>
                 </a-input-password>
               </div>
@@ -97,7 +97,7 @@
           <!-- 注册表单 -->
           <div class="form-section" :class="{ 'form-hidden': !showRegister }">
             <h2 class="form-title">
-              <icon-user-add class="title-icon" />
+              <span class="title-icon">👥</span>
               用户注册
             </h2>
             
@@ -105,28 +105,28 @@
             <div class="simple-form">
               <div class="form-item">
                 <a-input
-                  v-model="registerForm.username"
+                  v-model:value="registerForm.username"
                   placeholder="请输入新用户名"
                   size="large"
                   class="animated-input"
                   @keyup.enter="handleRegister"
                 >
                   <template #prefix>
-                    <icon-user-add class="input-icon" />
+                    <span class="input-icon">👥</span>
                   </template>
                 </a-input>
               </div>
 
               <div class="form-item">
                 <a-input-password
-                  v-model="registerForm.password"
+                  v-model:value="registerForm.password"
                   placeholder="请输入新密码"
                   size="large"
                   class="animated-input"
                   @keyup.enter="handleRegister"
                 >
                   <template #prefix>
-                    <icon-lock class="input-icon" />
+                    <span class="input-icon">🔒</span>
                   </template>
                 </a-input-password>
               </div>
@@ -164,15 +164,15 @@
         <p class="copyright">© 2024 HKCE Cloud. All rights reserved.</p>
         <div class="features">
           <span class="feature-item">
-            <icon-safe class="feature-icon" />
+            <span class="feature-icon">🔒</span>
             安全可靠
           </span>
           <span class="feature-item">
-            <icon-cloud class="feature-icon" />
+            <span class="feature-icon">☁️</span>
             云端同步
           </span>
           <span class="feature-item">
-            <icon-desktop class="feature-icon" />
+            <span class="feature-icon">💻</span>
             跨平台
           </span>
         </div>
@@ -512,7 +512,7 @@ onMounted(() => {
 /* 登录头部 */
 .login-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .logo-container {
@@ -520,11 +520,11 @@ onMounted(() => {
 }
 
 .logo-icon {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 16px;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 12px;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -539,7 +539,7 @@ onMounted(() => {
 }
 
 .logo {
-  font-size: 36px;
+  font-size: 28px;
   color: white;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -554,16 +554,16 @@ onMounted(() => {
 }
 
 .app-title {
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 700;
   color: white;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   letter-spacing: 1px;
 }
 
 .app-subtitle {
-  font-size: 16px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.8);
   margin: 0;
   font-weight: 300;
@@ -603,7 +603,7 @@ onMounted(() => {
 }
 
 .card-content {
-  padding: 40px;
+  padding: 24px;
   position: relative;
 }
 
@@ -627,22 +627,22 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  font-size: 24px;
+  gap: 8px;
+  font-size: 20px;
   font-weight: 600;
   color: #2c3e50;
-  margin: 0 0 32px 0;
+  margin: 0 0 20px 0;
   text-align: center;
 }
 
 .title-icon {
-  font-size: 28px;
+  font-size: 22px;
   color: #667eea;
 }
 
 /* 表单项 */
 .form-item {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   animation: fadeInUp 0.6s ease-out both;
 }
 
@@ -663,6 +663,7 @@ onMounted(() => {
 
 /* 输入框样式 */
 .animated-input {
+  width: 100%;
   border-radius: 12px;
   border: 2px solid #f0f0f0;
   transition: all 0.3s ease;
@@ -693,6 +694,7 @@ onMounted(() => {
 
 /* 按钮样式 */
 .submit-btn {
+  width: 100% !important;
   height: 52px;
   border-radius: 12px;
   font-size: 16px;
@@ -759,7 +761,7 @@ onMounted(() => {
 /* 登录底部 */
 .login-footer {
   text-align: center;
-  margin-top: 32px;
+  margin-top: 20px;
   animation: fadeIn 1s ease-out 0.8s both;
 }
 

@@ -33,13 +33,9 @@ func main() {
 	// 创建应用配置
 	appConfig := &options.App{
 		Title:             "HKCE Cloud 同步客户端",
-		Width:             1024,
-		Height:            768,
-		MinWidth:          800,
-		MinHeight:         600,
-		MaxWidth:          1280,
-		MaxHeight:         800,
-		DisableResize:     false,
+		Width:             1100,
+		Height:            710,
+		DisableResize:     true,
 		Fullscreen:        false,
 		Frameless:         false,
 		StartHidden:       false,
