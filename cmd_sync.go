@@ -67,8 +67,8 @@ func (a *App) RunSyncCommand() {
 
 // showSyncHelp 显示同步命令帮助
 func (a *App) showSyncHelp() {
-	fmt.Println("HKCE Cloud 同步命令行工具")
-	fmt.Println("用法: hkce-cloud sync <子命令> [参数...]")
+	fmt.Println("ACloud 同步命令行工具")
+	fmt.Println("用法: acloud sync <子命令> [参数...]")
 	fmt.Println("\n可用子命令:")
 	fmt.Println("  start                         - 启动同步服务")
 	fmt.Println("  stop                          - 停止同步服务")
@@ -144,7 +144,7 @@ func (a *App) cmdRunSync() {
 func (a *App) cmdAddSyncRule() {
 	if len(os.Args) < 7 {
 		fmt.Println("错误: 参数不足")
-		fmt.Println("用法: hkce-cloud sync add-rule <名称> <本地路径> <远程路径> <方向>")
+		fmt.Println("用法: acloud sync add-rule <名称> <本地路径> <远程路径> <方向>")
 		fmt.Println("方向: upload, download, bidirectional")
 		os.Exit(1)
 	}
@@ -228,7 +228,7 @@ func (a *App) cmdListSyncRules() {
 func (a *App) cmdRemoveSyncRule() {
 	if len(os.Args) < 4 {
 		fmt.Println("错误: 缺少规则ID")
-		fmt.Println("用法: hkce-cloud sync remove-rule <ID>")
+		fmt.Println("用法: acloud sync remove-rule <ID>")
 		os.Exit(1)
 	}
 
@@ -248,7 +248,7 @@ func (a *App) cmdRemoveSyncRule() {
 func (a *App) cmdEnableSyncRule() {
 	if len(os.Args) < 4 {
 		fmt.Println("错误: 缺少规则ID")
-		fmt.Println("用法: hkce-cloud sync enable-rule <ID>")
+		fmt.Println("用法: acloud sync enable-rule <ID>")
 		os.Exit(1)
 	}
 
@@ -268,7 +268,7 @@ func (a *App) cmdEnableSyncRule() {
 func (a *App) cmdDisableSyncRule() {
 	if len(os.Args) < 4 {
 		fmt.Println("错误: 缺少规则ID")
-		fmt.Println("用法: hkce-cloud sync disable-rule <ID>")
+		fmt.Println("用法: acloud sync disable-rule <ID>")
 		os.Exit(1)
 	}
 
@@ -345,7 +345,7 @@ func (a *App) cmdSyncConflicts() {
 func (a *App) cmdResolveConflict() {
 	if len(os.Args) < 5 {
 		fmt.Println("错误: 参数不足")
-		fmt.Println("用法: hkce-cloud sync resolve <路径> <解决方式>")
+		fmt.Println("用法: acloud sync resolve <路径> <解决方式>")
 		fmt.Println("解决方式: local, remote, both, skip")
 		os.Exit(1)
 	}

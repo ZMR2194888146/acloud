@@ -67,7 +67,7 @@ func NewApp() *App {
 	if err != nil {
 		homeDir = "."
 	}
-	storagePath := filepath.Join(homeDir, "hkce-cloud-storage")
+	storagePath := filepath.Join(homeDir, "acloud-storage")
 
 	// 确保存储目录存在
 	if _, err := os.Stat(storagePath); os.IsNotExist(err) {
@@ -98,7 +98,7 @@ func NewApp() *App {
 			AccessKeyID:     "minioadmin",
 			SecretAccessKey: "minioadmin",
 			UseSSL:          true,
-			BucketName:      "hkce-cloud",
+			BucketName:      "acloud-storage",
 			Enabled:         false,
 		},
 		syncEnabled:  false,
@@ -339,7 +339,7 @@ func (a *App) GetSyncStatus() SyncStatus {
 // MinimizeToTray 最小化到系统托盘
 func (a *App) MinimizeToTray() {
 	wailsRuntime.WindowHide(a.ctx)
-	a.SendNotification("HKCE Cloud", "应用已最小化到系统托盘")
+	a.SendNotification("ACloud", "应用已最小化到系统托盘")
 }
 
 // ShowFromTray 从系统托盘显示窗口

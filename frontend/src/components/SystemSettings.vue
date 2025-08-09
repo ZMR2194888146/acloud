@@ -235,7 +235,7 @@
                     <div class="setting-title">存储桶名称</div>
                     <a-input 
                       v-model:value="minioConfig.bucketName" 
-                      placeholder="例如: hkce-cloud"
+                      placeholder="例如: acloud-storage"
                       style="margin-top: 8px"
                     />
                   </a-col>
@@ -644,7 +644,7 @@ const exportSettings = () => {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'hkce-cloud-settings.json'
+  a.download = 'acloud-settings.json'
   a.click()
   URL.revokeObjectURL(url)
   message.success('设置已导出')

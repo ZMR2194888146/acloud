@@ -32,7 +32,7 @@ func main() {
 
 	// 创建应用配置
 	appConfig := &options.App{
-		Title:             "HKCE Cloud 同步客户端",
+		Title:             "ACloud 同步客户端",
 		Width:             1100,
 		Height:            710,
 		DisableResize:     true,
@@ -75,8 +75,8 @@ func main() {
 			WebviewIsTransparent: false,
 			WindowIsTranslucent:  false,
 			About: &mac.AboutInfo{
-				Title:   "HKCE Cloud 同步客户端",
-				Message: "© 2024 HKCE Cloud",
+				Title:   "ACloud 同步客户端",
+				Message: "© 2024 ACloud",
 				Icon:    nil,
 			},
 		},

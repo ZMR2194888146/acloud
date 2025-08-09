@@ -1,4 +1,4 @@
-module hkce-cloud
+module acloud
 
 go 1.23.0
 

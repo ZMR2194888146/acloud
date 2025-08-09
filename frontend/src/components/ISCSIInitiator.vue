@@ -654,8 +654,8 @@ const iscsiDisks = ref([])
 
 // 配置
 const initiatorConfig = ref({
-  name: 'HKCE-Initiator',
-  iqn: 'iqn.2024-01.com.hkce:initiator',
+  name: 'ACloud-Initiator',
+  iqn: 'iqn.2024-01.com.acloud:initiator',
   defaultPort: 3260,
   timeout: 30
 })

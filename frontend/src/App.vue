@@ -465,7 +465,7 @@ onMounted(() => {
             <div class="logo-icon-wrapper">
               <span class="logo-icon">☁️</span>
             </div>
-            <span v-if="!sidebarCollapsed" class="logo-text">HKCE Drive</span>
+            <span v-if="!sidebarCollapsed" class="logo-text">ACloud</span>
           </div>
         </div>
         

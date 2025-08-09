@@ -16,7 +16,7 @@
           <div class="logo-icon">
             <span class="logo">☁️</span>
           </div>
-          <h1 class="app-title">HKCE Cloud</h1>
+          <h1 class="app-title">ACloud</h1>
           <p class="app-subtitle">现代化桌面网盘应用</p>
         </div>
       </div>
@@ -161,7 +161,7 @@
 
       <!-- 底部信息 -->
       <div class="login-footer">
-        <p class="copyright">© 2024 HKCE Cloud. All rights reserved.</p>
+        <p class="copyright">© 2024 ACloud. All rights reserved.</p>
         <div class="features">
           <span class="feature-item">
             <span class="feature-icon">🔒</span>

@@ -145,7 +145,7 @@ onMounted(() => {
         type="text" 
         id="bucketName" 
         v-model="minioConfig.bucketName" 
-        placeholder="例如: hkce-cloud"
+        placeholder="例如: acloud-storage"
       />
     </div>
     

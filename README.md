@@ -1,8 +1,8 @@
-# HKCE Cloud Drive
+# ACloud
 
 一个基于 Wails 框架开发的现代化桌面云存储应用，提供本地文件管理和云端同步功能。
 
-![HKCE Cloud Drive](https://img.shields.io/badge/Version-1.0.0-blue.svg)
+![ACloud](https://img.shields.io/badge/Version-1.0.0-blue.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
@@ -48,8 +48,8 @@
 go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
 # 克隆项目
-git clone https://github.com/your-username/hkce-cloud-drive.git
-cd hkce-cloud-drive
+git clone https://github.com/your-username/acloud.git
+cd acloud
 
 # 安装前端依赖
 cd frontend
@@ -79,7 +79,7 @@ wails build -platform linux/amd64
 ## 📁 项目结构
 
 ```
-hkce-cloud-drive/
+acloud/
 ├── app.go                 # 应用主逻辑
 ├── main.go               # 程序入口
 ├── wails.json            # Wails 配置
@@ -106,7 +106,7 @@ hkce-cloud-drive/
   "endpoint": "play.min.io",
   "accessKeyId": "your-access-key",
   "secretAccessKey": "your-secret-key",
-  "bucketName": "your-bucket",
+  "bucketName": "acloud-storage",
   "useSSL": true,
   "enabled": true
 }
@@ -190,13 +190,13 @@ hkce-cloud-drive/
 
 ## 📞 联系方式
 
-- 项目主页: [GitHub Repository](https://github.com/your-username/hkce-cloud-drive)
-- 问题反馈: [Issues](https://github.com/your-username/hkce-cloud-drive/issues)
+- 项目主页: [GitHub Repository](https://github.com/ZMR2194888146/acloud)
+- 问题反馈: [Issues](https://github.com/ZMR2194888146/acloud/issues)
 - 邮箱: your-email@example.com
 
 ---
 
 <div align="center">
   <p>如果这个项目对你有帮助，请给它一个 ⭐️</p>
-  <p>Made with ❤️ by HKCE Team</p>
+  <p>Made with ❤️ by ACloud Team</p>
 </div>

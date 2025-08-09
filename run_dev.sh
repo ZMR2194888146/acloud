@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "=== HKCE Cloud 开发环境启动 ==="
+echo "=== ACloud 开发环境启动 ==="
 echo "正在启动 Wails 开发服务器..."
 echo ""
 
